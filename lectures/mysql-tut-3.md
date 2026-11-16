@@ -1,9 +1,25 @@
-# 🧱 Tutorial MySQL — Creación de Tablas y Carga de Archivos CSV
+# 🧱 Tutorial MySQL — Creación de la BD w3schools: Tablas y Carga de Archivos CSV
 
 
-## 🧩 Sección 1. Creación de las tablas
+## 🧩 Sección 1. Creación de la BD **w3schools** y de las tablas
 
-A continuación se definen las sentencias SQL para crear todas las tablas del sistema.
+### Ingresa a el servidor MySql
+
+```sql
+ipepetron$ mysql -u root
+```
+
+### Creación de la BD w3shools
+
+```sql
+mysql> CREATE DATABASE w3schools;
+
+mysql> USE w3schools;
+
+mysql> SHOW DATABASES;
+```
+
+### A continuación se definen las sentencias SQL para crear todas las tablas del sistema.
 
 ```sql
 -- Tabla: customers
@@ -81,31 +97,55 @@ CREATE TABLE order_details (
 
 ---
 
-## 📂 Sección 2. Carga de archivos CSV
+## 📂 Sección 2. Carga de archivos CSV a las tablas de la BD w3schools
 
-Todos los archivos `.csv` se encuentran en la siguiente ruta:
+Una vez creadas la BD  y las tablas: 
 
-```
-/Users/ipepetron/DEVx/mysql/tut/
-```
++ Salir del servidor MySql **para configurar la carga de arhivos locales; precisamente al servidor**
++ Crea una carpeta -local- para guardar los archivos **.csv** que contienen los récords (databases/tables) por cargar a su tabla respectiva en la  BD w3shools...  ésta -por ejemplo- es mi carpeta local:/Users/ipepetron/DEVx/mysql/tut/
 
-Antes de cargar los archivos, habilita el uso de archivos locales en MySQL:
++ Descargar -en tu carpeta local- los archivos .csv del repo de Github, ubicados en la siguiente tura: databases/tables/
 
-```sql
-SET GLOBAL local_infile = 1;
-```
-
-Estás utilizando el cliente con la opción `--local-infile=1`:
++ Conectarse nuevamente, al servidor  MySql, como cliente con la opción `--local-infile=1`:
 >    ```bash
 >    mysql --local-infile=1 -u root
 >   
 
 ---
 
+Antes de cargar los archivos **.csv**, habilita el uso de archivos locales en MySQL:
+
+```sql
+mysql> SET GLOBAL local_infile = 1;
+```
+
+![Local, Data Load setting-up](local-data-load-mysql.png)
+
+
+---
+
+Ahora sí, al ataque mis valientes, a cargar los datos en las tablas previamente creadas (**Sección 1**). Para dicho propósito se empleará la siguiente **SENTENCIA DML (LOAD DATA LOCAL INFILE)**:
+
+
+```sql
+LOAD DATA LOCAL INFILE '/ruta-absoluta-a-tu-carpeta-local/productos.csv'
+INTO TABLE Productos
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+```
+
 ### 🔹 Cargar `customers.csv`
 
 ```sql
-LOAD DATA LOCAL INFILE '/Users/ipepetron/DEVx/mysql/tut/customers.csv'
+USE w3chools;
+```
+
+---
+
+```sql
+LOAD DATA LOCAL INFILE '/ruta-abosuluta-a/customers.csv'
 INTO TABLE customers
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"' 
@@ -114,12 +154,14 @@ IGNORE 1 ROWS
 (CustomerID, CustomerName, ContactName, Address, City, PostalCode, Country);
 ```
 
+![... loading data into table customers from customers.csv](load-customers.png)
+
 ---
 
 ### 🔹 Cargar `employees.csv`
 
 ```sql
-LOAD DATA LOCAL INFILE '/Users/ipepetron/DEVx/mysql/tut/employees.csv'
+LOAD DATA LOCAL INFILE '/ruta-absoluta-a/employees.csv'
 INTO TABLE employees
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"' 
@@ -133,7 +175,7 @@ IGNORE 1 ROWS
 ### 🔹 Cargar `orders.csv`
 
 ```sql
-LOAD DATA LOCAL INFILE '/Users/ipepetron/DEVx/mysql/tut/orders.csv'
+LOAD DATA LOCAL INFILE '/ruta-absoluta-a/orders.csv'
 INTO TABLE orders
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"' 
@@ -147,7 +189,7 @@ IGNORE 1 ROWS
 ### 🔹 Cargar `order_details.csv`
 
 ```sql
-LOAD DATA LOCAL INFILE '/Users/ipepetron/DEVx/mysql/tut/order_details.csv'
+LOAD DATA LOCAL INFILE '/ruta-absoluta-a/order_details.csv'
 INTO TABLE order_details
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"' 
@@ -161,7 +203,7 @@ IGNORE 1 ROWS
 ### 🔹 Cargar `products.csv`
 
 ```sql
-LOAD DATA LOCAL INFILE '/Users/ipepetron/DEVx/mysql/tut/products.csv'
+LOAD DATA LOCAL INFILE '/ruta-absoluta-a/products.csv'
 INTO TABLE products
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"' 
@@ -172,10 +214,26 @@ IGNORE 1 ROWS
 
 ---
 
+### 🔹 Cargar `categories.csv`
+
+```sql
+LOAD DATA LOCAL INFILE '/ruta-absoluta-a/categories.csv'
+INTO TABLE Categories
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+```
+
+
+![... loading data into table categories from categories.csv](load-categories.png)
+
+---
+
 ### 🔹 Cargar `shippers.csv`
 
 ```sql
-LOAD DATA LOCAL INFILE '/Users/ipepetron/DEVx/mysql/tut/shippers.csv'
+LOAD DATA LOCAL INFILE '/ruta-absoluta-a/shippers.csv'
 INTO TABLE shippers
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"' 
@@ -189,7 +247,7 @@ IGNORE 1 ROWS
 ### 🔹 Cargar `suppliers.csv`
 
 ```sql
-LOAD DATA LOCAL INFILE '/Users/ipepetron/DEVx/mysql/tut/suppliers.csv'
+LOAD DATA LOCAL INFILE '/ruta-absoluta-a/suppliers.csv'
 INTO TABLE suppliers
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"' 
