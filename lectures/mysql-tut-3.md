@@ -72,6 +72,15 @@ CREATE TABLE products (
     FOREIGN KEY (SupplierID) REFERENCES suppliers(SupplierID)
 );
 
+
+-- Tabla categories
+
+CREATE TABLE Categories (
+  CategoryID INT PRIMARY KEY,
+  CategoryName VARCHAR(50) NOT NULL,
+  Description VARCHAR(255)
+);
+
 -- Tabla: orders
 CREATE TABLE orders (
     OrderID INT PRIMARY KEY,
