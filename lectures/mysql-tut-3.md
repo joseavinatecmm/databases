@@ -226,12 +226,13 @@ IGNORE 1 ROWS
 ### 🔹 Cargar `categories.csv`
 
 ```sql
-LOAD DATA LOCAL INFILE '/ruta-absoluta-a/categories.csv'
+LOAD DATA LOCAL INFILE '/ruta/completa/a/categories.csv'
 INTO TABLE Categories
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS;
+IGNORE 1 ROWS
+(CategoryID, CategoryName, Description);
 ```
 
 
