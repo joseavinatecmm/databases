@@ -41,7 +41,6 @@ CREATE TABLE products (
 
 DROP TRIGGER IF EXISTS before_product_insert;
 DELIMITER $$
-
 CREATE TRIGGER before_product_insert
 BEFORE INSERT ON products
 FOR EACH ROW
@@ -51,7 +50,6 @@ BEGIN
         SET MESSAGE_TEXT = 'Error: El precio del producto debe ser mayor que cero';
     END IF;
 END$$
-
 DELIMITER ;
 ```
 
@@ -78,10 +76,9 @@ VALUES (502, 'Queso Azul', 12, 4, '5 kg pkg', 0);
 ---
 
 
+### 🧩 Ejemplo 2 — Trigger sobre la tabla `orders`
 
-## 🧩 Ejemplo 2 — Trigger sobre la tabla `orders`
-
-### 🎯 Objetivo:
+#### 🎯 Objetivo:
 Registrar automáticamente en una tabla de auditoría (`order_log`) cada vez que se inserte un nuevo pedido en `orders`.
 
 ---
@@ -111,7 +108,6 @@ CREATE TABLE order_log (
 
 ```sql
 DELIMITER $$
-
 CREATE TRIGGER after_order_insert
 AFTER INSERT ON orders
 FOR EACH ROW
@@ -119,7 +115,6 @@ BEGIN
     INSERT INTO order_log (OrderID, ActionType, ActionDate)
     VALUES (NEW.OrderID, 'INSERT', NOW());
 END$$
-
 DELIMITER ;
 ```
 
@@ -149,6 +144,36 @@ SELECT * FROM order_log;
 📘 El trigger insertó automáticamente un registro en `order_log` con la acción **INSERT**.
 
 ---
+### ¿Cómo consultar y eliminar Triggers en MySQL?
+
+Una vez creados tus triggers, puedes inspeccionar su configuración, revisar su código o borrarlos cuando necesites actualizar su lógica.
+
+---
+
+#### Consultar Triggers creados
+
+* **Listar todos los triggers de la base activa** (usa `\G` para ver los resultados en formato vertical y legible):
+  ```sql
+  SHOW TRIGGERS\G
+  ```
+  *(Para filtrar por una tabla específica: `SHOW TRIGGERS LIKE 'Clientes'\G`).*
+
+* **Ver el código exacto de creación de un trigger:**
+  ```sql
+  SHOW CREATE TRIGGER limpiar_datos_cliente\G
+  ```
+
+---
+
+#### Eliminar Triggers
+
+En MySQL **no existe un comando `ALTER TRIGGER`**. Si necesitas modificar un disparador, debes eliminarlo y volverlo a crear:
+
+```sql
+DROP TRIGGER IF EXISTS limpiar_datos_cliente;
+```
+
+> **💡 Tip rápido:** Usar `IF EXISTS` evita que MySQL arroje un error si el trigger ya había sido borrado previamente.
 
 ### 🧭 Conclusión
 
@@ -171,19 +196,19 @@ El respaldo (backup) permite exportar toda la estructura y los datos de una base
 En la terminal del sistema operativo:
 
 ```bash
-mysqldump -u root -p nombre_base_datos > respaldo_completo.sql
+mysqldump -u root  nombre_base_datos > respaldo_completo.sql
 ```
 
 ### 🧩 Ejemplo 2: Respaldar solo algunas tablas
 
 ```bash
-mysqldump -u root -p nombre_base_datos customers orders products > respaldo_parcial.sql
+mysqldump -u root nombre_base_datos customers orders products > respaldo_parcial.sql
 ```
 
 ### 🔁 Restaurar desde un respaldo
 
 ```bash
-mysql -u root -p nombre_base_datos < respaldo_completo.sql
+mysql -u root nombre_base_datos < respaldo_completo.sql
 ```
 
 ✅ **Recomendaciones:**
