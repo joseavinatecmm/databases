@@ -1,99 +1,12 @@
-# 🧠 Tutorial de MySQL: Carga de CSV, Llaves Primarias y Foráneas, Triggers y Respaldo de Base de Datos
+# 🧠 Tutorial de MySQL: Triggers y Respaldo de Base de Datos
 
 
 ## Agenda
 
-1. **Definición de claves primarias y foráneas** 
-2. **Cargar de archivos CSV en MySql**
-3. **Creación de triggers**
-4. **Respaldo la base de datos completa**.
+- **Creación de triggers**
+- **Respaldo la base de datos completa**.
 
 ---
-## 🔑 Definir Primary Keys y Foreign Keys
-
-### Tablas: `customers`, `orders` y `order_details`
-
-Las **llaves primarias (PRIMARY KEY)** garantizan que cada fila tenga un identificador único,  
-mientras que las **llaves foráneas (FOREIGN KEY)** establecen relaciones entre tablas,  
-preservando la **integridad referencial** de la base de datos.
-
----
-
-## 🧩 Ejemplo 1: Definir llaves durante la creación de las tablas
-
-En este ejemplo, las llaves se especifican directamente dentro de las sentencias `CREATE TABLE`.
-
-```sql
--- Tabla de clientes
-CREATE TABLE customers (
-    CustomerID INT PRIMARY KEY,
-    CustomerName VARCHAR(100) NOT NULL,
-    ContactName VARCHAR(100),
-    Address VARCHAR(150),
-    City VARCHAR(100),
-    PostalCode VARCHAR(20),
-    Country VARCHAR(50)
-);
-
--- Tabla de órdenes
-CREATE TABLE orders (
-    OrderID INT PRIMARY KEY,
-    CustomerID INT,
-    OrderDate DATE,
-    ShipperID INT,
-    FOREIGN KEY (CustomerID) REFERENCES customers(CustomerID)
-);
-
--- Tabla de detalles de órdenes
-CREATE TABLE order_details (
-    OrderDetailID INT PRIMARY KEY,
-    OrderID INT,
-    ProductID INT,
-    Quantity INT,
-    FOREIGN KEY (OrderID) REFERENCES orders(OrderID)
-);
-
-```
-
-
-
----
-
-## 📂 Cargar archivos CSV en MySQL
-
-### 🔹 Concepto
-+ El comando `LOAD DATA INFILE` permite importar rápidamente datos desde un archivo CSV a una tabla existente.  
-
-### 🧩 Ejemplo 1: Cargar `customers.csv`
-
-```sql
-LOAD DATA INFILE '/Users/ipepetron/DEVx/mysql/tut/customers.csv'
-INTO TABLE customers
-CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(CustomerID, CustomerName, ContactName, Address, City, PostalCode, Country);
-```
-
-### 🧩 Ejemplo 2: Cargar `products.csv`
-
-```sql
-LOAD DATA INFILE '/Users/ipepetron/DEVx/mysql/tut/products.csv'
-INTO TABLE products
-CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(ProductID, ProductName, SupplierID, CategoryID, Unit, Price);
-```
-
-✅ **Consejo:** Verifica siempre los encabezados del CSV y usa `IGNORE 1 ROWS` para omitirlos.
-
----
-
 
 ## ⚙️ Crear Triggers
 A continuación se presentan **dos ejemplos prácticos de triggers (disparadores)** en **MySQL**, que se ejecutan automáticamente cuando se insertan registros en las tablas `orders` y `products`.
