@@ -1,283 +1,218 @@
-# 🧱 Tutorial SQL -  Creación de la BD w3schools: Tablas y Carga de Archivos CSV
+# 🧠 Tutorial SQL: Triggers y Respaldo de Base de Datos
 
 
-## 🧩 Sección 1. Creación de la BD **w3schools** y de las tablas
+## Agenda
 
-### Ingresa a el servidor MySql
+- **Creación de triggers**
+- **Respaldo la base de datos completa**.
+
+---
+
+## ⚙️ Crear Triggers
+A continuación se presentan **dos ejemplos prácticos de triggers (disparadores)** en **MySQL**, que se ejecutan automáticamente cuando se insertan registros en las tablas `orders` y `products`.
+
+---
+
+## 🧩 Ejemplo 1 — Trigger sobre la tabla `products`
+
+### 🎯 Objetivo:
+Evitar que se inserten productos con un precio menor o igual a cero.
+
+---
+
+### 1️⃣ Crear la tabla `products`
 
 ```sql
-ipepetron$ mysql -u root
-```
-
-### Creación de la BD w3shools
-
-```sql
-mysql> CREATE DATABASE w3schools;
-
-mysql> USE w3schools;
-
-mysql> SHOW DATABASES;
-```
-
-### A continuación se definen las sentencias SQL para crear todas las tablas del sistema.
-
-```sql
--- Tabla: customers
-CREATE TABLE customers (
-    CustomerID INT PRIMARY KEY,
-    CustomerName VARCHAR(100) NOT NULL,
-    ContactName VARCHAR(100),
-    Address VARCHAR(150),
-    City VARCHAR(50),
-    PostalCode VARCHAR(15),
-    Country VARCHAR(50)
-);
-
--- Tabla: employees
-CREATE TABLE employees (
-    EmployeeID INT PRIMARY KEY,
-    LastName VARCHAR(50) NOT NULL,
-    FirstName VARCHAR(50) NOT NULL,
-    BirthDate DATE NOT NULL,
-    Notes TEXT CHARACTER SET utf8mb4
-);
-
--- Tabla: shippers
-CREATE TABLE shippers (
-    ShipperID INT PRIMARY KEY,
-    ShipperName VARCHAR(100) NOT NULL,
-    Phone VARCHAR(30)
-);
-
--- Tabla: suppliers
-CREATE TABLE suppliers (
-    SupplierID INT PRIMARY KEY,
-    SupplierName VARCHAR(100) NOT NULL,
-    ContactName VARCHAR(100),
-    Address VARCHAR(150),
-    City VARCHAR(50),
-    PostalCode VARCHAR(15),
-    Country VARCHAR(50),
-    Phone VARCHAR(30)
-);
-
--- Tabla: products
 CREATE TABLE products (
     ProductID INT PRIMARY KEY,
     ProductName VARCHAR(100) NOT NULL,
     SupplierID INT,
     CategoryID INT,
     Unit VARCHAR(50),
-    Price DECIMAL(10,2),
-    FOREIGN KEY (SupplierID) REFERENCES suppliers(SupplierID)
+    Price DECIMAL(10,2)
 );
+```
+
+---
+
+### 2️⃣ Crear el trigger `before_product_insert`
+
+```sql
+
+DROP TRIGGER IF EXISTS before_product_insert;
+DELIMITER $$
+CREATE TRIGGER before_product_insert
+BEFORE INSERT ON products
+FOR EACH ROW
+BEGIN
+    IF NEW.Price <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El precio del producto debe ser mayor que cero';
+    END IF;
+END$$
+DELIMITER ;
+```
+
+---
+
+### 3️⃣ Insertar productos
+
+#### ✅ Inserción válida:
+
+```sql
+INSERT INTO products (ProductID, ProductName, SupplierID, CategoryID, Unit, Price)
+VALUES (501, 'Queso Manchego', 12, 4, '10 - 500 g pkgs', 38.00);
+```
+
+#### ❌ Inserción inválida:
+
+```sql
+INSERT INTO products (ProductID, ProductName, SupplierID, CategoryID, Unit, Price)
+VALUES (502, 'Queso Azul', 12, 4, '5 kg pkg', 0);
+```
+
+> ❗ **Error 1644 (45000): Error: El precio del producto debe ser mayor que cero.**
+
+---
 
 
--- Tabla categories
+### 🧩 Ejemplo 2 — Trigger sobre la tabla `orders`
 
-CREATE TABLE Categories (
-  CategoryID INT PRIMARY KEY,
-  CategoryName VARCHAR(50) NOT NULL,
-  Description VARCHAR(255)
-);
+#### 🎯 Objetivo:
+Registrar automáticamente en una tabla de auditoría (`order_log`) cada vez que se inserte un nuevo pedido en `orders`.
 
--- Tabla: orders
+---
+
+### 1️⃣ Crear la tabla principal y la tabla de log
+
+```sql
 CREATE TABLE orders (
     OrderID INT PRIMARY KEY,
     CustomerID INT,
     EmployeeID INT,
     OrderDate DATE,
-    ShipperID INT,
-    FOREIGN KEY (CustomerID) REFERENCES customers(CustomerID),
-    FOREIGN KEY (EmployeeID) REFERENCES employees(EmployeeID),
-    FOREIGN KEY (ShipperID) REFERENCES shippers(ShipperID)
+    ShipperID INT
 );
 
--- Tabla: order_details
-CREATE TABLE order_details (
-    OrderDetailID INT PRIMARY KEY,
+CREATE TABLE order_log (
+    LogID INT AUTO_INCREMENT PRIMARY KEY,
     OrderID INT,
-    ProductID INT,
-    Quantity INT,
-    FOREIGN KEY (OrderID) REFERENCES orders(OrderID),
-    FOREIGN KEY (ProductID) REFERENCES products(ProductID)
+    ActionType VARCHAR(20),
+    ActionDate DATETIME
 );
 ```
 
 ---
 
-## 📂 Sección 2. Carga de archivos CSV a las tablas de la BD w3schools
-
-Una vez creadas la BD  y las tablas: 
-
-+ Salir del servidor MySql **para configurar la carga de arhivos locales; precisamente al servidor**
-+ Crea una carpeta -local- para guardar los archivos **.csv** que contienen los récords (databases/tables) por cargar a su tabla respectiva en la  BD w3shools...  ésta -por ejemplo- es mi carpeta local:/Users/ipepetron/DEVx/mysql/tut/
-
-+ Descargar -en tu carpeta local- los archivos .csv del repo de Github, ubicados en la siguiente tura: databases/tables/
-
-+ Conectarse nuevamente, al servidor  MySql, como cliente con la opción `--local-infile=1`:
->    ```bash
->    mysql --local-infile=1 -u root
->   
-
----
-
-Antes de cargar los archivos **.csv**, habilita el uso de archivos locales en MySQL:
+### 2️⃣ Crear el trigger `after_order_insert`
 
 ```sql
-mysql> SET GLOBAL local_infile = 1;
-```
-
-![Local, Data Load setting-up](local-data-load-mysql.png)
-
-
----
-
-Ahora sí, al ataque mis valientes, a cargar los datos en las tablas previamente creadas (**Sección 1**). Para dicho propósito se empleará la siguiente **SENTENCIA DML (LOAD DATA LOCAL INFILE)**:
-
-
-```sql
-LOAD DATA LOCAL INFILE '/ruta-absoluta-a-tu-carpeta-local/productos.csv'
-INTO TABLE Productos
-FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS;
-```
-
-### 🔹 Cargar `customers.csv`
-
-```sql
-USE w3chools;
+DELIMITER $$
+CREATE TRIGGER after_order_insert
+AFTER INSERT ON orders
+FOR EACH ROW
+BEGIN
+    INSERT INTO order_log (OrderID, ActionType, ActionDate)
+    VALUES (NEW.OrderID, 'INSERT', NOW());
+END$$
+DELIMITER ;
 ```
 
 ---
 
-```sql
-LOAD DATA LOCAL INFILE '/ruta-abosuluta-a/customers.csv'
-INTO TABLE customers
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"' 
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(CustomerID, CustomerName, ContactName, Address, City, PostalCode, Country);
-```
-
-![... loading data into table customers from customers.csv](load-customers.png)
-
----
-
-### 🔹 Cargar `employees.csv`
+### 3️⃣ Insertar un registro en `orders`
 
 ```sql
-LOAD DATA LOCAL INFILE '/ruta-absoluta-a/employees.csv'
-INTO TABLE employees
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"' 
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(EmployeeID, LastName, FirstName, BirthDate, Notes);
+INSERT INTO orders (OrderID, CustomerID, EmployeeID, OrderDate, ShipperID)
+VALUES (20001, 90, 5, '2025-10-23', 3);
 ```
 
 ---
 
-### 🔹 Cargar `orders.csv`
+### 4️⃣ Verificar el log
 
 ```sql
-LOAD DATA LOCAL INFILE '/ruta-absoluta-a/orders.csv'
-INTO TABLE orders
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"' 
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(OrderID, CustomerID, EmployeeID, OrderDate, ShipperID);
+SELECT * FROM order_log;
 ```
+
+**Resultado esperado:**
+
+| LogID | OrderID | ActionType | ActionDate           |
+|--------|----------|-------------|----------------------|
+| 1 | 20001 | INSERT | 2025-10-23 10:42:11 |
+
+📘 El trigger insertó automáticamente un registro en `order_log` con la acción **INSERT**.
+
+---
+### ¿Cómo consultar y eliminar Triggers en MySQL?
+
+Una vez creados tus triggers, puedes inspeccionar su configuración, revisar su código o borrarlos cuando necesites actualizar su lógica.
 
 ---
 
-### 🔹 Cargar `order_details.csv`
+#### Consultar Triggers creados
 
-```sql
-LOAD DATA LOCAL INFILE '/ruta-absoluta-a/order_details.csv'
-INTO TABLE order_details
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"' 
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(OrderDetailID, OrderID, ProductID, Quantity);
-```
+* **Listar todos los triggers de la base activa** (usa `\G` para ver los resultados en formato vertical y legible):
+  ```sql
+  SHOW TRIGGERS\G
+  ```
+  *(Para filtrar por una tabla específica: `SHOW TRIGGERS LIKE 'Clientes'\G`).*
 
----
-
-### 🔹 Cargar `products.csv`
-
-```sql
-LOAD DATA LOCAL INFILE '/ruta-absoluta-a/products.csv'
-INTO TABLE products
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"' 
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(ProductID, ProductName, SupplierID, CategoryID, Unit, Price);
-```
+* **Ver el código exacto de creación de un trigger:**
+  ```sql
+  SHOW CREATE TRIGGER limpiar_datos_cliente\G
+  ```
 
 ---
 
-### 🔹 Cargar `categories.csv`
+#### Eliminar Triggers
+
+En MySQL **no existe un comando `ALTER TRIGGER`**. Si necesitas modificar un disparador, debes eliminarlo y volverlo a crear:
 
 ```sql
-LOAD DATA LOCAL INFILE '/ruta/completa/a/categories.csv'
-INTO TABLE Categories
-FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(CategoryID, CategoryName, Description);
+DROP TRIGGER IF EXISTS limpiar_datos_cliente;
 ```
 
+> **💡 Tip rápido:** Usar `IF EXISTS` evita que MySQL arroje un error si el trigger ya había sido borrado previamente.
 
-![... loading data into table categories from categories.csv](load-categories.png)
+### 🧭 Conclusión
+
+| Trigger | Evento | Tipo | Efecto |
+|----------|---------|-------|--------|
+| `after_order_insert` | `AFTER INSERT ON orders` | Acción automática | Inserta registro en `order_log`. |
+| `before_product_insert` | `BEFORE INSERT ON products` | Validación | Impide precios no válidos. |
+
+Estos ejemplos muestran cómo los **triggers en MySQL** permiten automatizar auditorías y mantener la integridad de los datos.
+Los **triggers** ejecutan acciones automáticas ante eventos `INSERT`, `UPDATE` o `DELETE`.
 
 ---
 
-### 🔹 Cargar `shippers.csv`
+## 💾 Respaldar una Base de Datos
 
-```sql
-LOAD DATA LOCAL INFILE '/ruta-absoluta-a/shippers.csv'
-INTO TABLE shippers
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"' 
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(ShipperID, ShipperName, Phone);
+El respaldo (backup) permite exportar toda la estructura y los datos de una base de datos a un archivo `.sql` utilizando el comando `mysqldump`.
+
+### 🧩 Ejemplo 1: Respaldar toda la base de datos
+
+En la terminal del sistema operativo:
+
+```bash
+mysqldump -u root  nombre_base_datos > respaldo_completo.sql
 ```
 
----
+### 🧩 Ejemplo 2: Respaldar solo algunas tablas
 
-### 🔹 Cargar `suppliers.csv`
-
-```sql
-LOAD DATA LOCAL INFILE '/ruta-absoluta-a/suppliers.csv'
-INTO TABLE suppliers
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"' 
-LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(SupplierID, SupplierName, ContactName, Address, City, PostalCode, Country, Phone);
+```bash
+mysqldump -u root nombre_base_datos customers orders products > respaldo_parcial.sql
 ```
 
----
+### 🔁 Restaurar desde un respaldo
 
-## ✅ Verificación de carga
-
-Ejecuta para verificar cuántos registros se cargaron correctamente:
-
-```sql
-SELECT COUNT(*) FROM customers;
-SELECT COUNT(*) FROM employees;
-SELECT COUNT(*) FROM orders;
-SELECT COUNT(*) FROM order_details;
-SELECT COUNT(*) FROM products;
-SELECT COUNT(*) FROM shippers;
-SELECT COUNT(*) FROM suppliers;
+```bash
+mysql -u root nombre_base_datos < respaldo_completo.sql
 ```
+
+✅ **Recomendaciones:**
+- Realizar respaldos periódicos.  
+- Guardar copias en ubicaciones seguras o en servicios en la nube.  
+- Probar las restauraciones regularmente.
+
