@@ -1,4 +1,4 @@
-# 🧠 Tutorial de MySQL: Triggers y Respaldo de Base de Datos
+# 🧠 Tutorial SQL: Triggers y Respaldo de Base de Datos
 
 
 ## Agenda

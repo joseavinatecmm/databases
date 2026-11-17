@@ -1,4 +1,4 @@
-# 🧱 Tutorial MySQL — Creación de la BD w3schools: Tablas y Carga de Archivos CSV
+# 🧱 Tutorial SQL -  Creación de la BD w3schools: Tablas y Carga de Archivos CSV
 
 
 ## 🧩 Sección 1. Creación de la BD **w3schools** y de las tablas
